@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, SafeAreaView, Image, TouchableOpacity, Alert } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import axios from 'axios';
-
+import { FaImages } from "react-icons/fa";
+import { CgEnter } from 'react-icons/cg';
 export default function App() {
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [concentration, setConcentration] = useState(null);
-
-  const apiUrl = "http://127.0.0.1:8000/app/get-concentration";
+  const [ip, setIp] = useState("127.0.0.1:8000")
+  // const apiUrl = "http://127.0.0.1:8000/app/get-concentration";
+  let apiUrl = `http://${ip}/app/get-concentration`;
 
   const apiCall = async (imageInfo) => {
     try {
       setLoading(true);
+      console.log(apiUrl);
       const formData = new FormData();
       formData.append('image', {
         uri: imageInfo.uri,
@@ -56,13 +59,34 @@ export default function App() {
       }
     });
   };
-  
+
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ height: 400, width: '100%' }}>
-        <Image style={{ height: 400, width: '100%' }} source={{ uri: selectedImage }} />
+      <View style={{ height: '40%', width: '100%' }}>
+        {selectedImage ? (
+          <>
+            <View
+              style={{
+                width: '60%',
+                height: '90%',
+                marginLeft: '20%',
+                backgroundColor: 'skyblue',
+                marginTop: 25,
+              }}
+            >
+              <Image style={{ height: '100%', width: '100%' }} source={{ uri: selectedImage }} />
+            </View>
+          </>
+        ) : (
+          <>
+            <View style={{ paddingTop: 25, flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <Text style={{ fontSize: 25 }}>No image selected</Text>
+            </View>
+          </>
+        )}
       </View>
+
       <TouchableOpacity
         onPress={pickImage}
         style={{
@@ -78,38 +102,30 @@ export default function App() {
       >
         <Text style={{ fontSize: 20 }}>Gallery</Text>
       </TouchableOpacity>
+      <TextInput
+        style={{ height: 45, fontSize: 20, marginTop: 25, textAlign: 'center', color: "white"}}
+        placeholder="Type IP address"
+        onChangeText={newip => { setIp(newip); console.log(newip) }}
+        defaultValue={ip}
+      />
       {loading ? (
-        <Text>Loading...</Text>
+        <Text style={{textAlign:"center"}}>Loading...</Text>
       ) : concentration ? (
         <>
-          <Text>Concentration: {concentration.Concentation}</Text>
-          <Text>Status: {concentration.Status}</Text>
-          <View style={{ marginTop: 10 }}>
-            <Text>C Strip:</Text>
-            <Text>X: {concentration['C Strip'].x}</Text>
-            <Text>Y: {concentration['C Strip'].y}</Text>
-            <Text>Width: {concentration['C Strip'].width}</Text>
-            <Text>Height: {concentration['C Strip'].height}</Text>
-            <Text>Confidence: {concentration['C Strip'].confidence}</Text>
-            <Text>Class: {concentration['C Strip'].class}</Text>
-            <Text>Class ID: {concentration['C Strip'].class_id}</Text>
-            <Text>Detection ID: {concentration['C Strip'].detection_id}</Text>
-            <Text>Image Path: {concentration['C Strip'].image_path}</Text>
-            <Text>Prediction Type: {concentration['C Strip'].prediction_type}</Text>
-          </View>
-          <View style={{ marginTop: 10 }}>
-            <Text>T Strip:</Text>
-            <Text>X: {concentration['T Strip'].x}</Text>
-            <Text>Y: {concentration['T Strip'].y}</Text>
-            <Text>Width: {concentration['T Strip'].width}</Text>
-            <Text>Height: {concentration['T Strip'].height}</Text>
-            <Text>Confidence: {concentration['T Strip'].confidence}</Text>
-            <Text>Class: {concentration['T Strip'].class}</Text>
-            <Text>Class ID: {concentration['T Strip'].class_id}</Text>
-            <Text>Detection ID: {concentration['T Strip'].detection_id}</Text>
-            <Text>Image Path: {concentration['T Strip'].image_path}</Text>
-            <Text>Prediction Type: {concentration['T Strip'].prediction_type}</Text>
-          </View>
+          {concentration.Status != "Error" ? (
+            <>
+              <Text>
+                Status: {concentration.Status}
+              </Text>
+              {console.log(typeof concentration.Concentation)}
+              <Text style={{textAlign: "center", fontSize: 30, color: "green"}}>Concentration: {concentration.Concentation.toFixed(2)}</Text>
+            </>
+          )
+            :
+            <>
+              <Text style={{textAlign: "center", fontSize: 30, color: "red"}}>Status: {concentration.Status}</Text>
+            </>
+          }
         </>
       ) : null}
     </SafeAreaView>
