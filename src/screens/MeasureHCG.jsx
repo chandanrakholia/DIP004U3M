@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, SafeAreaView, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, SafeAreaView, Image, TouchableOpacity, Alert, Button, StyleSheet } from 'react-native';
 // import { launchImageLibrary } from 'react-native-image-picker';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+// import ImagePicker from 'react-native-image-picker';
 import axios from 'axios';
 import { FaImages } from "react-icons/fa";
 import { CgEnter } from 'react-icons/cg';
-
+import ImagePicker from 'react-native-image-crop-picker';
 // navigation
 
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
@@ -19,7 +20,7 @@ export default function App({ navigation }) {
 
     // useEffect(() => {
     //     const quickGuideStep3 = () => {
-    //         Alert.alert('Quick Guide (Step-2)', 'Wait untill processing. You will get your concentration on your Screen, If there is any issue with the image it will notify you.', [
+    //         Alert.alert('Quick Guide (Step-2)', 'Wait for a process to finish. You will get your concentration on your Screen, If there is any issue with the image it will notify you.', [
     //             {
     //                 text: 'Cancel',
     //                 onPress: () => console.log('Ask me later pressed'),
@@ -52,21 +53,23 @@ export default function App({ navigation }) {
     const [loading, setLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState('');
     const [concentration, setConcentration] = useState(null);
-    const [ip, setIp] = useState("127.0.0.1:8000")
+    const [ip, setIp] = useState("0.0.0.0")
+    const [bool, setBool] = useState(false)
     // const {userName} = route.params
     // const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
     // const apiUrl = "http://127.0.0.1:8000/app/get-concentration";
-    let apiUrl = `http://${ip}/app/get-concentration`;
+    let apiUrl = `http://${ip}:8000/app/get-concentration`;
 
     const apiCall = async (imageInfo) => {
         try {
+            console.log("imageInfo", imageInfo)
             setLoading(true);
             console.log(apiUrl);
             const formData = new FormData();
             formData.append('image', {
-                uri: imageInfo.uri,
-                name: imageInfo.fileName, // Assuming the image has a filename property
-                type: imageInfo.type, // Assuming the image has a type property
+                uri: imageInfo["path"],
+                name: imageInfo["path"], // Assuming the image has a filename property
+                type: imageInfo['mime'], // Assuming the image has a type property
             });
 
             const response = await axios.post(apiUrl, formData, {
@@ -101,40 +104,69 @@ export default function App({ navigation }) {
                 Alert.alert('Error', 'An error occurred while selecting image.');
             } else {
                 setSelectedImage(response.assets[0].uri);
-                apiCall(response.assets[0]);
+                console.log(response.assets[0])
+                // apiCall(response.assets[0]);
             }
         });
     };
-    const pickImageFromCamera = async () => {
-        try {
-            const response = await launchCamera({ mediaType: 'photo' });
+    const launchCamera = () => {
+        let options = {
+            storageOptions: {
+                skipBackup: true,
+                path: 'images',
+            },
+        };
+        ImagePicker.launchCamera(options, (response) => {
+            console.log('Response = ', response);
+
             if (response.didCancel) {
-                console.log('User cancelled image selection');
+                console.log('User cancelled image picker');
             } else if (response.error) {
-                console.error('ImagePicker error:', response.error);
-                Alert.alert('Error', 'An error occurred while selecting image.');
-    
-                // Automatically close the alert after 5 seconds (5000 milliseconds)
+                console.log('ImagePicker Error: ', response.error);
+            } else if (response.customButton) {
+                console.log('User tapped custom button: ', response.customButton);
+                alert(response.customButton);
             } else {
-                const imageUri = response.assets[0]?.uri; // Get the URI of the selected image
-                if (imageUri) {
-                    setSelectedImage(imageUri); // Update the selectedImage state
-                    apiCall(response.assets[0]); // Call the API function with the selected image
-                } else {
-                    console.error('Image URI not found in response:', response);
-                    Alert.alert('Error', 'An error occurred while selecting image.');
-                }
+                const source = { uri: response.uri };
+                console.log('response', JSON.stringify(response));
+                setFilePath(response);
+                setFileData(response.data);
+                setFileUri(response.uri);
             }
-        } catch (error) {
-            console.error('Error occurred while picking image from camera:', error);
-            Alert.alert('Error', 'An error occurred while selecting image.');
-        }
-    };
-    
-    
-    
+        });
 
+    }
+    const choosePhotoFromCamera = () => {
+        console.warn("Take photo")
+        ImagePicker.openCamera({
+            width: 300,
+            height: 400,
+            cropping: true,
+        }).then(image => {
+            console.log(image);
+            const image_path = image["path"]
+            console.log("image_path", image_path)
+            setSelectedImage(image_path)
+            apiCall(image);
+        });
+    }
+    const choosePhotoFromGallery = () => {
+        ImagePicker.openPicker({
+            width: 300,
+            height: 400,
+            cropping: true
+        }).then(image => {
+            console.log(image);
+            const image_path = image["path"]
+            console.log("image_path", image_path)
+            setSelectedImage(image_path)
+            apiCall(image);
+        });
+    }
+    const handleIP = () => {
+        setBool(!bool);
 
+    }
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "#51D1C6", }}>
             <View style={{ height: '40%', width: '100%' }}>
@@ -161,7 +193,7 @@ export default function App({ navigation }) {
                 )}
             </View>
             <TouchableOpacity
-                onPress={pickImageFromCamera}
+                onPress={choosePhotoFromCamera}
                 style={{
                     marginTop: 20,
                     height: 50,
@@ -173,12 +205,12 @@ export default function App({ navigation }) {
                     alignSelf: 'center'
                 }}
             >
-                {/* <Text style={{ fontSize: 20, }}>Camera</Text> */}
                 <Text style={{ fontSize: 20 }}>Camera</Text>
-
             </TouchableOpacity>
+
             <TouchableOpacity
-                onPress={pickImage}
+                onPress={choosePhotoFromGallery}
+                // onPress={pickImage}
                 style={{
                     marginTop: 20,
                     height: 50,
@@ -190,16 +222,23 @@ export default function App({ navigation }) {
                     alignSelf: 'center'
                 }}
             >
-                {/* <Text style={{ fontSize: 20, }}>Camera</Text> */}
                 <Text style={{ fontSize: 20 }}>Gallery</Text>
 
             </TouchableOpacity>
-            <TextInput
-                style={{ height: 45, fontSize: 20, marginTop: 25, textAlign: 'center', color: "white" }}
-                placeholder="Type IP address"
-                onChangeText={newip => { setIp(newip); console.log(newip) }}
-                defaultValue={ip}
-            />
+
+            {bool ? (
+                <TextInput
+                    style={{ height: 45, fontSize: 20, marginTop: 25, textAlign: 'center', color: "white" }}
+                    placeholder="Type IP address"
+                    onChangeText={newip => { setIp(newip); console.log(newip) }}
+                    defaultValue={ip}
+                />
+            ) : (
+                <Text
+                    style={{ height: 45, fontSize: 20, marginTop: 25, textAlign: 'center', color: "white" }}
+                />)
+            }
+
             {loading ? (
                 <Text style={{ textAlign: "center" }}>Loading...</Text>
             ) : concentration ? (
@@ -220,6 +259,24 @@ export default function App({ navigation }) {
                     }
                 </>
             ) : null}
+
+            <View style={styles.fixToText}>
+                <Button
+                    color="skyblue"
+                    title="custom IP"
+                    onPress={handleIP}
+                />
+            </View>
         </SafeAreaView>
     );
 }
+const styles = StyleSheet.create({
+    fixToText: {
+        flexDirection: 'row',
+        // justifyContent: 'space-between',
+
+    },
+    customIP: {
+        backgroundColor: "red"
+    }
+})

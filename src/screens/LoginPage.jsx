@@ -1,23 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Button, TextInput, ActivityIndicator } from 'react-native';
 // navigation
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
-import {RootStackParamList} from '../App'
-
-
+import { RootStackParamList } from '../App'
+import AsyncStorage from "@react-native-async-storage/async-storage"
 const App = ({ navigation }) => {
   const [name, setName] = useState("");
+  const [age, setAge] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    // Check if user details exist in AsyncStorage
+    AsyncStorage.getItem("userDetails")
+      .then((userDetailsString) => {
+        if (userDetailsString) {
+          const userDetails = JSON.parse(userDetailsString);
+          setName(userDetails.name);
+          setAge(userDetails.age);
+          console.log(userDetails)
+        navigation.replace('HomePage',userDetails);
 
-  const goToHomePage = () => {
-    // Navigate to the Home Page
-    // Replace 'HomePage' with the actual name of your Home Page component
-    navigation.navigate('HomePage');
-  };
+        }
+        setIsLoading(false);
+
+      })
+      .catch((error) => {
+        console.error("Error retrieving user details: ", error);
+        setIsLoading(false);
+      });
+  }, []);
+
+  const handleStore = () => {
+    const userDetails = {
+      name: name,
+      age: age
+    }
+    AsyncStorage.setItem("userDetails", JSON.stringify(userDetails))
+      .then(() => {
+        // Navigate to the Home Page
+        navigation.replace('HomePage',userDetails);
+      })
+      .catch((error) => {
+        console.error("Error storing user details: ", error);
+      });
+
+    
+  }
+
+  if (isLoading) {
+    return (
+      <View style={[styles.loadingContainer, styles.horizontal]}>
+        <ActivityIndicator size="large" color="white" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.main}>
-        <Text style={styles.hcgText}>HCGMeter</Text>
+        <Text style={styles.hcgText}>HCG Meter</Text>
       </View>
       <View style={styles.nameContainer}>
         <Text style={styles.nameText}>{name}</Text>
@@ -25,29 +65,36 @@ const App = ({ navigation }) => {
       <View style={styles.bottomContainer}>
         <TextInput
           style={[styles.input]}
-          placeholder="Name"
+          placeholder="Enter your Name"
           textAlign="center"
+          placeholderTextColor="lightgray" 
           onChangeText={(text) => setName(text)}
         />
         <TextInput
           style={[styles.input]}
-          placeholder="Age"
+          placeholder="Enter Your Age"
           textAlign="center"
           keyboardType='numeric'
+          placeholderTextColor="lightgray" 
+          onChangeText={(text) => setAge(text)}
         />
-        <Button title="Enter"
-          onPress={() => navigation.navigate("HomePage", 
-          // {
-          //   userName: name
-          // }
-          )}
-        />
+        <Button title="Enter" onPress={handleStore} />
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: "#51D1C6",
+  },
+  horizontal: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
+  },
   container: {
     flex: 1,
     backgroundColor: "#51D1C6",
@@ -77,7 +124,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   input: {
-    height: 40,
+    height: 50,
     marginBottom: 10,
     paddingHorizontal: 10,
     backgroundColor: '#fff',
@@ -86,10 +133,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd', // Adjust border color to a lighter shade
     color: "black",
-    placeholderTextColor: "black",
+    placeholderTextColor: "red",
     borderRadius: 20, // Adjust the border radius as needed
     fontSize: 20,
-    // color:"#51D1C6",
   },
 });
 
