@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { RootStackParamList } from '../App'
 import userImage from "../userImage.png"
 import { useRoute } from "@react-navigation/native"
+import UserAvatar from 'react-native-user-avatar';
 const HomePage = ({ navigation }) => {
   const route = useRoute();
   const name = route.params?.name
@@ -13,10 +14,11 @@ const HomePage = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.userProfile}>
         <View style={styles.profilePictureContainer}>
-          <Image
+          {/* <Image
             source={userImage}
             style={styles.profilePicture}
-          />
+          /> */}
+          <UserAvatar size={100} name={name} bgColor="lightgray" textColor="black" />
         </View>
         {/* <Text style={[styles.heading, styles.whiteText]}>User Profile</Text> */}
         <View style={styles.profileItem}>
@@ -32,10 +34,10 @@ const HomePage = ({ navigation }) => {
             title="Measure HCG"
             onPress={() => navigation.navigate("MeasureHCG")}
           />
-          <Button
+          {/* <Button
             title="General Information"
             onPress={() => navigation.navigate("GeneralInfo")}
-          />
+          /> */}
         </View>
       </View>
     </View>
@@ -66,9 +68,9 @@ const styles = StyleSheet.create({
     width: 300,
   },
   profilePictureContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50, // half of width and height to make it circular
+    width: 96,
+    height: 96,
+    borderRadius: 48, // half of width and height to make it circular
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',

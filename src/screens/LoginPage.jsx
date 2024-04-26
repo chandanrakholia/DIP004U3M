@@ -8,6 +8,7 @@ const App = ({ navigation }) => {
   const [name, setName] = useState("");
   const [age, setAge] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [bool, setBool] = useState(false)
   useEffect(() => {
     // Check if user details exist in AsyncStorage
     AsyncStorage.getItem("userDetails")
@@ -17,7 +18,7 @@ const App = ({ navigation }) => {
           setName(userDetails.name);
           setAge(userDetails.age);
           console.log(userDetails)
-        navigation.replace('HomePage',userDetails);
+          navigation.replace('HomePage', userDetails);
 
         }
         setIsLoading(false);
@@ -37,13 +38,13 @@ const App = ({ navigation }) => {
     AsyncStorage.setItem("userDetails", JSON.stringify(userDetails))
       .then(() => {
         // Navigate to the Home Page
-        navigation.replace('HomePage',userDetails);
+        navigation.replace('HomePage', userDetails);
       })
       .catch((error) => {
         console.error("Error storing user details: ", error);
       });
 
-    
+
   }
 
   if (isLoading) {
@@ -56,18 +57,29 @@ const App = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.main}>
-        <Text style={styles.hcgText}>HCG Meter</Text>
-      </View>
-      <View style={styles.nameContainer}>
+      {bool ? (
+        <>
+          <View style={styles.main}>
+            <Text style={styles.hcgText}>Hello {name}</Text>
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={styles.main}>
+            <Text style={styles.hcgText}>HCG Meter</Text>
+          </View>
+        </>
+      )}
+      {/* <View style={styles.nameContainer}>
         <Text style={styles.nameText}>{name}</Text>
-      </View>
+      </View> */}
       <View style={styles.bottomContainer}>
         <TextInput
           style={[styles.input]}
           placeholder="Enter your Name"
           textAlign="center"
-          placeholderTextColor="lightgray" 
+          placeholderTextColor="darkgray"
+          // selectionColor={'black'}
           onChangeText={(text) => setName(text)}
         />
         <TextInput
@@ -75,10 +87,12 @@ const App = ({ navigation }) => {
           placeholder="Enter Your Age"
           textAlign="center"
           keyboardType='numeric'
-          placeholderTextColor="lightgray" 
+          placeholderTextColor="darkgray"
+          // selectionColor={'green'}
           onChangeText={(text) => setAge(text)}
+          onFocus={()=>setBool(true)}
         />
-        <Button title="Enter" onPress={handleStore} />
+        <Button style={{ width: "10%" }} title="Enter" onPress={handleStore} />
       </View>
     </View>
   );

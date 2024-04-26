@@ -15,41 +15,41 @@ import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 
 // type HomePageProps = NativeStackScreenProps<RootStackParamList, 'HomePage'>
-
+import LoaderKit from 'react-native-loader-kit'
+// let {height, width} = Dimensions.get('window');
 export default function App({ navigation }) {
+    useEffect(() => {
+        const quickGuideStep3 = () => {
+            Alert.alert('Quick Guide (Step-2)', 'Wait for a process to finish. You will get your concentration on your Screen, If there is any issue with the image it will notify you.', [
+                {
+                    text: 'Cancel',
+                    onPress: () => console.log('Ask me later pressed'),
 
-    // useEffect(() => {
-    //     const quickGuideStep3 = () => {
-    //         Alert.alert('Quick Guide (Step-2)', 'Wait for a process to finish. You will get your concentration on your Screen, If there is any issue with the image it will notify you.', [
-    //             {
-    //                 text: 'Cancel',
-    //                 onPress: () => console.log('Ask me later pressed'),
+                },
+                { text: 'Next' },
+            ]);
+        }
+        const quickGuideStep2 = () => {
+            Alert.alert('Quick Guide (Step-1)', 'You will see Camera button on Home Screen, Click it to choose your image', [
+                {
+                    text: 'Cancel',
+                    onPress: () => console.log('Ask me later pressed'),
 
-    //             },
-    //             { text: 'Next' },
-    //         ]);
-    //     }
-    //     const quickGuideStep2 = () => {
-    //         Alert.alert('Quick Guide (Step-1)', 'You will see Camera button on Home Screen, Click it to choose your image', [
-    //             {
-    //                 text: 'Cancel',
-    //                 onPress: () => console.log('Ask me later pressed'),
-
-    //             },
-    //             { text: 'Next', onPress: () => quickGuideStep3() },
-    //         ]);
-    //     }
-    //     const quickGuideStep1 = () => {
-    //         Alert.alert('Quick Guide', 'This is Quick Guide on How to use App.', [
-    //             {
-    //                 text: 'Cancel',
-    //                 onPress: () => console.log('Ask me later pressed'),
-    //             },
-    //             { text: 'Next', onPress: () => { quickGuideStep2() } },
-    //         ]);
-    //     }
-    //     quickGuideStep1();
-    // }, [])
+                },
+                { text: 'Next', onPress: () => quickGuideStep3() },
+            ]);
+        }
+        const quickGuideStep1 = () => {
+            Alert.alert('Quick Guide', 'This is Quick Guide on How to use App.', [
+                {
+                    text: 'Cancel',
+                    onPress: () => console.log('Ask me later pressed'),
+                },
+                { text: 'Next', onPress: () => { quickGuideStep2() } },
+            ]);
+        }
+        quickGuideStep1();
+    }, [])
     const [loading, setLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState('');
     const [concentration, setConcentration] = useState(null);
@@ -82,6 +82,7 @@ export default function App({ navigation }) {
 
             // Set concentration only if the response data is valid
             if (response.data) {
+                console.log(response.data)
                 setConcentration(response.data);
             } else {
                 console.error('Invalid response data:', response.data);
@@ -187,7 +188,7 @@ export default function App({ navigation }) {
                 ) : (
                     <>
                         <View style={{ paddingTop: 25, flex: 1, justifyContent: "center", alignItems: "center" }}>
-                            <Text style={{ fontSize: 25 }}>No image selected</Text>
+                            <Text style={{ fontSize: 25, color: "white" }}>No image selected</Text>
                         </View>
                     </>
                 )}
@@ -198,14 +199,14 @@ export default function App({ navigation }) {
                     marginTop: 20,
                     height: 50,
                     width: '60%',
-                    backgroundColor: 'skyblue',
+                    backgroundColor: '#0962EA',
                     borderRadius: 20,
                     justifyContent: 'center',
                     alignItems: 'center',
                     alignSelf: 'center'
                 }}
             >
-                <Text style={{ fontSize: 20 }}>Camera</Text>
+                <Text style={{ fontSize: 20, color: "white" }}>Camera</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -215,23 +216,24 @@ export default function App({ navigation }) {
                     marginTop: 20,
                     height: 50,
                     width: '60%',
-                    backgroundColor: 'skyblue',
+                    backgroundColor: '#0962EA',
                     borderRadius: 20,
                     justifyContent: 'center',
                     alignItems: 'center',
                     alignSelf: 'center'
                 }}
             >
-                <Text style={{ fontSize: 20 }}>Gallery</Text>
+                <Text style={{ fontSize: 20, color: "white" }}>Gallery</Text>
 
             </TouchableOpacity>
 
             {bool ? (
                 <TextInput
-                    style={{ height: 45, fontSize: 20, marginTop: 25, textAlign: 'center', color: "white" }}
+                    style={{ height: 45, width: 200, fontSize: 20, marginTop: 25, textAlign: 'center', color: "white",alignSelf: 'center' }}
                     placeholder="Type IP address"
                     onChangeText={newip => { setIp(newip); console.log(newip) }}
                     defaultValue={ip}
+                    selectionColor={'black'}
                 />
             ) : (
                 <Text
@@ -240,21 +242,37 @@ export default function App({ navigation }) {
             }
 
             {loading ? (
-                <Text style={{ textAlign: "center" }}>Loading...</Text>
+                <View style={{ display: "flex", justifyContent: "center", alignSelf: 'center' }}>
+                    {/* <Text style={{ textAlign: "center" }}>Loading...</Text> */}
+                    <LoaderKit
+                        style={{ width: 50, height: 50, textAlign: 'center' }}
+                        name={'BallPulse'} // Optional: see list of animations below
+                        color={'black'} // Optional: color can be: 'red', 'green',... or '#ddd', '#ffffff',...
+                    />
+                </View>
             ) : concentration ? (
                 <>
                     {concentration.Status != "Error" ? (
                         <>
+                            <View
+                                style={{
+                                    borderWidth: 2,
+                                    borderColor: "black",
+                                    borderRadius: 10,
+                                    width: "80%",
+                                    alignSelf: 'center'
+                                }}>
+                                <Text style={{ textAlign: "center", fontSize: 30, color: "green", marginBottom: 10 }}>Concentration: {concentration.Concentation.toFixed(2)}</Text>
+                            </View>
                             <Text>
-                                Status: {concentration.Status}
+                                {/* Status: {concentration.Status} */}
                             </Text>
                             {console.log(typeof concentration.Concentation)}
-                            <Text style={{ textAlign: "center", fontSize: 30, color: "green" }}>Concentration: {concentration.Concentation.toFixed(2)}</Text>
                         </>
                     )
                         :
                         <>
-                            <Text style={{ textAlign: "center", fontSize: 20, color: "red" }}>Oops! Something went wrong</Text>
+                            <Text style={{ textAlign: "center", fontSize: 20, color: "white" }}>Oops! Something went wrong</Text>
                         </>
                     }
                 </>
@@ -265,6 +283,7 @@ export default function App({ navigation }) {
                     color="skyblue"
                     title="custom IP"
                     onPress={handleIP}
+                    
                 />
             </View>
         </SafeAreaView>
