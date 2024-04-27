@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, SafeAreaView, Image, TouchableOpacity, Alert, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, SafeAreaView, Image, TouchableOpacity, Alert, Button, StyleSheet,ActivityIndicator } from 'react-native';
 // import { launchImageLibrary } from 'react-native-image-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 // import ImagePicker from 'react-native-image-picker';
@@ -15,7 +15,6 @@ import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 
 // type HomePageProps = NativeStackScreenProps<RootStackParamList, 'HomePage'>
-import LoaderKit from 'react-native-loader-kit'
 // let {height, width} = Dimensions.get('window');
 export default function App({ navigation }) {
     useEffect(() => {
@@ -53,7 +52,8 @@ export default function App({ navigation }) {
     const [loading, setLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState('');
     const [concentration, setConcentration] = useState(null);
-    const [ip, setIp] = useState("0.0.0.0")
+    // const [ip, setIp] = useState("0.0.0.0")
+    const [ip, setIp] = useState("172.25.238.138")
     const [bool, setBool] = useState(false)
     // const {userName} = route.params
     // const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
@@ -244,11 +244,7 @@ export default function App({ navigation }) {
             {loading ? (
                 <View style={{ display: "flex", justifyContent: "center", alignSelf: 'center' }}>
                     {/* <Text style={{ textAlign: "center" }}>Loading...</Text> */}
-                    <LoaderKit
-                        style={{ width: 50, height: 50, textAlign: 'center' }}
-                        name={'BallPulse'} // Optional: see list of animations below
-                        color={'black'} // Optional: color can be: 'red', 'green',... or '#ddd', '#ffffff',...
-                    />
+                    <ActivityIndicator size="large" color="black" />
                 </View>
             ) : concentration ? (
                 <>
